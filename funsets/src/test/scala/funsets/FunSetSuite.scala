@@ -113,14 +113,27 @@ class FunSetSuite extends FunSuite {
   test("test map") {
     new TestSets {
       val set = union(union(singletonSet(1), singletonSet(3)), union(singletonSet(5), singletonSet(7)))
-      printSet(set)
       val expected = map(set, (x: Int) => x - 1)
-      printSet(expected)
       assert(contains(expected, 0))
       assert(contains(expected, 2))
       assert(contains(expected, 4))
       assert(contains(expected, 6))
-      assert(expected.toString().equals("{0, 2, 4, 6}"))
+      assert(FunSets.toString(expected).equals("{0,2,4,6}"))
+    }
+  }
+
+  test("test forall and exists") {
+    new TestSets {
+      val set = union(union(singletonSet(1), singletonSet(3)), union(singletonSet(5), singletonSet(7)))
+      assert(forall(set, x => x > 0))
+      assert(!forall(set, x => x > 2))
+      assert(!forall(set, x => x < 7))
+      assert(forall(set, x => x < 8))
+      assert(exists(set, x => x > 2))
+      assert(exists(set, x => x > 3))
+      assert(exists(set, x => x < 3))
+      assert(exists(set, x => x > 5))
+      assert(!exists(set, x => x > 7))
     }
   }
 
