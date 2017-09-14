@@ -104,6 +104,8 @@ abstract class TweetSet {
     * This method takes a function and applies it to every element in the set.
     */
   def foreach(f: Tweet => Unit): Unit
+
+  def isEmpty: Boolean
 }
 
 class Empty extends TweetSet {
@@ -150,6 +152,8 @@ class Empty extends TweetSet {
     * and be implemented in the subclasses?
     */
   override def descendingByRetweet: TweetList = Nil
+
+  override def isEmpty = true
 }
 
 class NonEmpty(elem: Tweet, left: TweetSet, right: TweetSet) extends TweetSet {
@@ -178,7 +182,7 @@ class NonEmpty(elem: Tweet, left: TweetSet, right: TweetSet) extends TweetSet {
     else if (elem.text < tw.text) new NonEmpty(elem, left, right.remove(tw))
     else left.union(right)
 
-  def foreach(f: Tweet => Unit): Unit = {
+  def foreach(f: Tweet => Unit) {
     f(elem)
     left.foreach(f)
     right.foreach(f)
@@ -204,9 +208,21 @@ class NonEmpty(elem: Tweet, left: TweetSet, right: TweetSet) extends TweetSet {
     * and be implemented in the subclasses?
     */
   override def mostRetweeted: Tweet = {
-    var max: Tweet = elem
-    foreach(tweet => if (tweet.retweets > max.retweets) max = tweet)
-    max
+    def most(first: Tweet, second: Tweet) : Tweet = if(first.retweets > second.retweets) first else second
+
+    if (left.isEmpty && !right.isEmpty) {
+      most(right.mostRetweeted, elem)
+    } else if (!left.isEmpty && right.isEmpty) {
+      most(left.mostRetweeted, elem)
+    } else if (!left.isEmpty && !right.isEmpty) {
+      most(left.mostRetweeted, most(elem, left.mostRetweeted))
+    } else {
+      //left.isEmpty && right.isEmpty
+      elem
+    }
+    /*var max: Tweet = elem
+    foreach(tweet => if (tweet.retweets > max) max = tweet)
+    max*/
   }
 
   /**
@@ -223,6 +239,8 @@ class NonEmpty(elem: Tweet, left: TweetSet, right: TweetSet) extends TweetSet {
     val rest = remove(max)
     new Cons(max, rest.descendingByRetweet)
   }
+
+  override def isEmpty = false
 }
 
 trait TweetList {
