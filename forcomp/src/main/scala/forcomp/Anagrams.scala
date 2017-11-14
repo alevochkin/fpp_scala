@@ -147,5 +147,30 @@ object Anagrams {
     *
     * Note: There is only one anagram of an empty sentence.
     */
-  def sentenceAnagrams(sentence: Sentence): List[Sentence] = ???
+  def sentenceAnagrams(sentence: Sentence): List[Sentence] = {
+    val occurrences = sentenceOccurrences(sentence)
+    val listOfCombinations = combinations(occurrences)
+
+    /*def getSentence(occurrences: Occurrences): Option[Sentence] = {
+      def iter(occurrences: Occurrences, acc: Option[Sentence]) = occurrences match {
+        case Nil => acc
+        case head :: tail => {
+          val
+        }
+      }
+
+      iter(occurrences, None)
+    }*/
+
+
+    def iter(combinations: List[Occurrences], acc: List[Sentence]): List[Sentence] = combinations match {
+      case Nil => acc
+      case head :: tail => dictionaryByOccurrences.get(head) match {
+        case None => iter(tail, acc);
+        case Some(s) => iter(tail, acc :+ s)
+      }
+    }
+
+    iter(listOfCombinations, List())
+  }
 }
