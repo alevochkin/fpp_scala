@@ -148,8 +148,12 @@ object Anagrams {
     * Note: There is only one anagram of an empty sentence.
     */
   def sentenceAnagrams(sentence: Sentence): List[Sentence] = {
-    val occurrences = sentenceOccurrences(sentence)
-    val listOfCombinations = combinations(occurrences)
+    //val occurrences = sentenceOccurrences(sentence)
+    //val listOfCombinations = combinations(occurrences)
+    /*combinations(sentenceOccurrences(sentence))
+      .map(occurrences => dictionaryByOccurrences.getOrElse(occurrences, Nil))
+      .filter(words => words != Nil)
+      .foldLeft(List[Sentence](List()))((sentences, words) => sentences.flatMap(sentence => words.map(word => word :: sentence)))*/
 
     /*def getSentence(occurrences: Occurrences): Option[Sentence] = {
       def iter(occurrences: Occurrences, acc: Option[Sentence]) = occurrences match {
@@ -160,10 +164,23 @@ object Anagrams {
       }
 
       iter(occurrences, None)
+    }
+
+    def iterateCombinations(combinations: List[Occurrences], counter: Int, acc: List[Sentence]): List[Sentence] = {
+      if (counter < combinations.size) {
+        dictionaryByOccurrences.get(combinations(counter)) match {
+          case None => iterateCombinations(combinations, counter + 1, acc)
+          case Some(words) => iterateCombinations(combinations, counter + 1, acc.flatMap(sentence => words.map(word => sentence :+ word)))
+        }
+      } else {
+        acc
+      }
     }*/
 
+    //iterateCombinations(combinations(occurrences), 0, List())
 
-    def iter(combinations: List[Occurrences], acc: List[Sentence]): List[Sentence] = combinations match {
+
+    /*def iter(combinations: List[Occurrences], acc: List[Sentence]): List[Sentence] = combinations match {
       case Nil => acc
       case head :: tail => dictionaryByOccurrences.get(head) match {
         case None => iter(tail, acc);
@@ -171,6 +188,30 @@ object Anagrams {
       }
     }
 
-    iter(listOfCombinations, List())
+    iter(listOfCombinations, List())*/
+
+    def calculateSentence(current: Occurrences, others: List[Occurrences]): List[Sentence] = {
+      def iterat(occurency: Occurrences, others: List[Occurrences], acc: List[Sentence]): List[Sentence] = others match {
+        case Nil => acc
+        case head :: tail =>
+          val words = dictionaryByOccurrences.getOrElse(head, Nil)
+          iterat(head, tail.map(occurr => subtract(occurr, head)),
+            if (acc.isEmpty) words.map(word => List(word))
+            else acc.flatMap(sentence => words.map(word => sentence :+ word)))
+      }
+
+      iterat(current, others, List(List()))
+    }
+
+    def calculateAnagram(occurrences: List[Occurrences], acc: List[Sentence], index: Int): List[Sentence] =
+      if (index < occurrences.size) {
+        val current = occurrences(index)
+        //val rest = subtract(occurrences, current)
+        calculateAnagram(occurrences, acc ::: calculateSentence(current, occurrences), index + 1)
+      } else {
+        acc
+      }
+
+    calculateAnagram(combinations(sentenceOccurrences(sentence)), List(List()), 0)
   }
 }
