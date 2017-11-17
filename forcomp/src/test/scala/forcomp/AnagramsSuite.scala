@@ -63,6 +63,22 @@ class AnagramsSuite extends FunSuite {
     assert(combinations(abba).toSet === abbacomb.toSet)
   }
 
+test("combinations: I love you") {
+    val abba = List(('i', 1), ('l', 1))
+    val abbacomb = List(
+      List(),
+      List(('a', 1)),
+      List(('a', 2)),
+      List(('b', 1)),
+      List(('a', 1), ('b', 1)),
+      List(('a', 2), ('b', 1)),
+      List(('b', 2)),
+      List(('a', 1), ('b', 2)),
+      List(('a', 2), ('b', 2))
+    )
+    assert(combinations(abba).toSet === abbacomb.toSet)
+  }
+
 
   test("sentence anagrams: []") {
     val sentence = List()
@@ -96,10 +112,25 @@ class AnagramsSuite extends FunSuite {
     assert(sentenceAnagrams(sentence).toSet === anas.toSet)
   }
 
-  test("sentence anagrams: I love you") {
-    val sentence = List("I", "love", "you")
-    val anas = List(List("I", "love", "you"), List("You", "olive"))
-    assert(sentenceAnagrams(sentence).toSet === anas.toSet)
+  test("sentence anagrams: Yes man") {
+    val sentence = List("Yes", "man")
+    val expected = List(
+      List("en", "as", "my"),
+      List("en", "my", "as"),
+      List("man", "yes"),
+      List("men", "say"),
+      List("as", "en", "my"),
+      List("as", "my", "en"),
+      List("sane", "my"),
+      List("Sean", "my"),
+      List("my", "en", "as"),
+      List("my", "as", "en"),
+      List("my", "sane"),
+      List("my", "Sean"),
+      List("say", "men"),
+      List("yes", "man")
+    )
+    assert(sentenceAnagrams(sentence).toSet === expected.toSet)
   }
 
 }
