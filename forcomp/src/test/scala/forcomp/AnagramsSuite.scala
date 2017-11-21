@@ -135,4 +135,11 @@ class AnagramsSuite extends FunSuite {
     )
     assert(sentenceAnagrams(sentence).toSet === expected.toSet)
   }
+
+  test("firsFunction") {
+    val combinesLR = combinations(sentenceOccurrences(List("Linux", "rulez")))
+    val firstResult = firstFunction(List(('e', 1), ('r', 1), ('x', 1)), combinesLR, List(List()))
+    println(firstResult)
+    assert(firstResult.nonEmpty)
+  }
 }
