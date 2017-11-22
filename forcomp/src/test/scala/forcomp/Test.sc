@@ -104,6 +104,8 @@ val thirdWords = third.map(occur => dictionaryByOccurrences.get(occur))
   occur <- combination if ;
 ) yield dictionaryByOccurrences.get(occur)*/
 
+combinesLR
+
 
 for (i <- 0 until 10;
      j <- i until 10 if i + j == 3)
