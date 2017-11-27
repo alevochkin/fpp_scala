@@ -20,6 +20,7 @@ def iterateCombination(combination: List[Occurrences], acc: List[Sentence]): Lis
 */
 
 
+/*
 def iterateCombination(combination: List[Occurrences], acc: List[Sentence], current: Occurrences): List[Sentence] = combination match {
   case List() => acc
   case _ :: tail =>
@@ -30,6 +31,7 @@ def iterateCombination(combination: List[Occurrences], acc: List[Sentence], curr
     val newTail = tail.map(o => subtract(o, current)).filter(o => o.nonEmpty).filter(o => dictionaryByOccurrences.get(o).isDefined)
     newTail.flatMap(o => iterateCombination(newTail, newAcc, o))
 }
+*/
 
 //iterateCombination(combinesLR, List(List()))
 //Linux
@@ -45,8 +47,6 @@ val res007 = combinesLR.map(occurences => subtract(occurences, current001))
   //.map(occurences => subtract(occurences, List(('z', 1), ('l', 1), ('u', 2))))
   .filter(occurences => occurences.nonEmpty)
 
-val firstResult = first(combinesLR, current001, 10)
-
 def first(combinations: List[Occurrences], current: Occurrences, length: Int): List[Sentence] = {
   val words = dictionaryByOccurrences.getOrElse(current, List())
   combinations.map(o => subtract(o, current))
@@ -56,6 +56,11 @@ def first(combinations: List[Occurrences], current: Occurrences, length: Int): L
     .flatMap(sentence => words.map(word => word :: sentence))
     .filter(sentences => sentences.mkString.length == length)
 }
+
+val firstResult = first(combinesLR, current001, 10)
+val firstResult01 = first(combinesLR, List(('r', 1), ('e', 1), ('x', 1)).sortBy(_._1), 10)
+
+
 
 
 def iterateCombination(combinations: List[Occurrences], length: Int): List[Sentence] = {
@@ -67,15 +72,41 @@ def iterateCombination(combinations: List[Occurrences], length: Int): List[Sente
       acc
     }
   }
+
   iterate(0, List())
 }
 
 val resultOfResults = iterateCombination(combinations(sentenceOccurrences(List("Linux", "rulez"))), 10)
 
 
+def testFunction(combinations: List[Occurrences], current: Occurrences): List[Sentence] = {
+  val words = dictionaryByOccurrences.getOrElse(current, List())
 
+  def iterate(combinations: List[Occurrences], current: Occurrences, acc: List[Sentence]): List[Sentence] = {
+    val newAcc = acc.flatMap(sentence => words.map(word => word :: sentence))
+    if (combinations.isEmpty) {
+      newAcc
+    } else {
+      val newCombinations = combinations.map(o => subtract(o, current)).filter(o => o.nonEmpty)
+      iterate(newCombinations, newCombinations.head, newAcc)
+    }
+  }
 
+  iterate(combinations, current, List())
+}
 
+val rex = List(('r', 1), ('e', 1), ('x', 1)).sortBy(_._1)
+val lin = List(('l', 1), ('i', 1), ('n', 1)).sortBy(_._1)
+val zulu = List(('l', 1), ('u', 2), ('z', 1)).sortBy(_._1)
+val wordsRex = dictionaryByOccurrences.getOrElse(rex, List())
+//val resTest = testFunction(combinations(sentenceOccurrences(List("Linux", "rulez"))), rex)
 
-List(List("Linux"), List("Linux"), List("Linux"), List("Linux"), List("Linux"), List("Linux"), List("Linux"), List("Linux"))
-  .flatMap(sentence => words.map(word => word :: sentence))
+combinations(sentenceOccurrences(List("Linux", "rulez")))
+  .map(o => subtract(o, rex))
+  .map(o => subtract(o, lin))
+  .map(o => subtract(o, zulu)).filter(o => o.nonEmpty)
+  .filter(o => o.nonEmpty)
+/*.map(o => dictionaryByOccurrences.getOrElse(o, List()))
+.filter(o => o.nonEmpty)
+.flatMap(sentence => words.map(word => word :: sentence))
+.filter(sentences => sentences.mkString.length == 10)*/
