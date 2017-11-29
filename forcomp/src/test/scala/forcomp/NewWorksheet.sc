@@ -1,4 +1,4 @@
-import forcomp.Anagrams._
+import forcomp.Anagrams.{combinations, _}
 
 def testFunction(combinations: List[Occurrences], current: Occurrences): List[Sentence] = {
 
@@ -79,7 +79,30 @@ val linuxRulexRes = first(linuxRulez, List(), 0)
 linuxRulez.map(o => subtract(o, rex))
 val fooRes = foo(linuxRulez.map(o => subtract(o, rex)), List(dictionaryByOccurrences.getOrElse(rex, List())))
 
-for(
+
+
+/*for(
   combine <- linuxRulez;
   element <- linuxRulez.map(c => subtract(c, combine))
-) yield dictionaryByOccurrences.getOrElse(element, List("::NONE::"))
+) yield dictionaryByOccurrences.getOrElse(element, List("::NONE::"))*/
+//for(combine <- linuxRulez; others = linuxRulez.map(c => subtract(c, combine)); other <- others)
+
+/*def combinations(occurrences: List[Occurrences]): List[Sentence] = occurrences match {
+  case List() => List(Nil)
+  case (c, n) :: others =>
+    val tails = combinations(others)
+    tails ::: (for {
+      j <- tails
+      i <- 1 to n
+    } yield (c, i) :: j)
+}*/
+
+val first = for(combination <- linuxRulez if dictionaryByOccurrences.get(combination).isDefined) yield combination
+
+first.flatMap(combination => dictionaryByOccurrences.get(combination))
+
+for {
+  comb1 <- first
+  comb2 <- first
+  if comb1 != comb2
+} yield (dictionaryByOccurrences.get(comb1), dictionaryByOccurrences.get(comb2))
