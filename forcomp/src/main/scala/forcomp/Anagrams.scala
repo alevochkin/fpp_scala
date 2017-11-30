@@ -148,56 +148,16 @@ object Anagrams {
     * Note: There is only one anagram of an empty sentence.
     */
   def sentenceAnagrams(sentence: Sentence): List[Sentence] = {
-    val length = sentence.mkString.length
+    def iterate(occs: Occurrences): List[Sentence] = occs match {
+      case Nil => List(List())
+      case occ => for {
+        combinations <- combinations(occ)
+        words <- dictionaryByOccurrences getOrElse(combinations, Nil)
+        others <- iterate(subtract(occ, wordOccurrences(words)))
 
-    def firstFunction(current: Occurrences, combines: List[Occurrences], acc: List[Sentence]): List[Sentence] =
-      combines match {
-        case Nil => acc
-        case list =>
-          val words = dictionaryByOccurrences.getOrElse(current, List())
-          val other = list.map(occurs => subtract(occurs, current))
-            .filter(occurs => occurs.nonEmpty)
-            .filter(occur => dictionaryByOccurrences.get(occur).isDefined)
-          val newAcc = acc.flatMap(sentence => words.map(word => sentence :+ word))
-          if (other.nonEmpty) {
-            other.flatMap(occurs => firstFunction(occurs, other, newAcc))
-          } else newAcc
-      }
-
-
-    def findSentences(current: Occurrences, others: List[Occurrences], acc: List[Sentence]): List[Sentence] =
-      others match {
-        case Nil => acc
-        case head :: tail => dictionaryByOccurrences.get(current) match {
-          case None => acc
-          case Some(words) => findSentences(head, tail,
-            if (acc.isEmpty) words.map(word => List(word))
-            else acc.flatMap(sentence => words.map(word => sentence :+ word)))
-        }
-      }
-
-
-    def iterateCombinations(occurrences: List[Occurrences], acc: List[Sentence]): List[Sentence] = occurrences match {
-      case Nil => acc
-      case head :: tail => val newSentence = firstFunction(head, tail, List(List()))
-        iterateCombinations(tail, if (newSentence.mkString.length == length) acc ::: newSentence else acc)
+      } yield words :: others
     }
 
-    iterateCombinations(combinations(sentenceOccurrences(sentence)), List(List()))
+    iterate(sentenceOccurrences(sentence))
   }
-
-  def firstFunction(current: Occurrences, combines: List[Occurrences], acc: List[Sentence]):
-  List[Sentence] =
-    if (combines.isEmpty) {
-      acc
-    } else {
-      val other = combines
-        .map(occurs => subtract(occurs, current))
-        .filter(occurs => occurs.nonEmpty)
-        .filter(occur => dictionaryByOccurrences.get(occur).isDefined)
-      dictionaryByOccurrences.get(current) match {
-        case None => other.flatMap(occurs => firstFunction(occurs, other, acc))
-        case Some(words) => other.flatMap(occurs => firstFunction(occurs, other, acc.flatMap(sentence => words.map(word => sentence :+ word))))
-      }
-    }
 }
