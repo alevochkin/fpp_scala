@@ -3,8 +3,8 @@ bool isEmpty(){
     return true;
   bool result = true;
   for (int i = 0; i < 10; i++) {
-    if(readFromFile("input.txt", i)) {
-      result = indexes[i].matched;
+    if(readFromFile("input.txt")) {
+      result &= indexes[i].matched;
     }
     indexes[i].setMatched(true);
   }
