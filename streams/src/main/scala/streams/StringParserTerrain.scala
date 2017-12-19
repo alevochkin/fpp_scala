@@ -1,7 +1,5 @@
 package streams
 
-import common._
-
 /**
  * This component implements a parser to define terrains from a
  * graphical ASCII representation.
@@ -52,7 +50,13 @@ trait StringParserTerrain extends GameDef {
    * a valid position (not a '-' character) inside the terrain described
    * by `levelVector`.
    */
-  def terrainFunction(levelVector: Vector[Vector[Char]]): Pos => Boolean = ???
+  def terrainFunction(levelVector: Vector[Vector[Char]]): Pos => Boolean = {
+    pos =>
+      (pos.row <= levelVector.size - 1 && pos.col <= levelVector(0).size - 1) &&
+        (pos.row >= 0 && pos.col >= 0) &&
+        !levelVector(pos.row)(pos.col).equals('-')
+  }
+
 
   /**
    * This function should return the position of character `c` in the
@@ -62,7 +66,17 @@ trait StringParserTerrain extends GameDef {
    * Hint: you can use the functions `indexWhere` and / or `indexOf` of the
    * `Vector` class
    */
-  def findChar(c: Char, levelVector: Vector[Vector[Char]]): Pos = ???
+  def findChar(c: Char, levelVector: Vector[Vector[Char]]): Pos = {
+    def iterate(vector: Vector[Vector[Char]], row: Int): Pos =
+      if (row < vector.size) {
+        val col = vector(row).indexOf(c)
+        if(col != -1) Pos(row, col) else iterate(vector, row + 1)
+      }
+      else
+        Pos(-1, -1)
+
+    iterate(levelVector, 0)
+  }
 
   private lazy val vector: Vector[Vector[Char]] =
     Vector(level.split("\n").map(str => Vector(str: _*)): _*)
