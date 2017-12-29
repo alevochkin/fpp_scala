@@ -1,7 +1,5 @@
 package streams
 
-import common._
-
 /**
  * This component implements the solver for the Bloxorz game
  */
@@ -62,7 +60,18 @@ trait Solver extends GameDef {
    * construct the correctly sorted stream.
    */
   def from(initial: Stream[(Block, List[Move])],
-           explored: Set[Block]): Stream[(Block, List[Move])] = ???
+           explored: Set[Block]): Stream[(Block, List[Move])] =
+    if (initial.isEmpty)
+      Stream.empty
+    else {
+      val more = for {
+        path <- initial
+        next <- path._1.legalNeighbors.groupBy(_._1).mapValues(_.map(_._2))
+        if!(explored contains next._1)
+      } yield next
+
+      initial.head #:: from(more, explored ++ (more map (_._1)))
+    }
 
   /**
    * The stream of all paths that begin at the starting block.
