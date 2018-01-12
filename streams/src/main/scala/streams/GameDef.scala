@@ -85,6 +85,8 @@ trait GameDef {
     */
   def startBlock: Block = Block(startPos, startPos)
 
+  def goalBlock: Block = Block(goal, goal)
+
 
   /**
     * A block is represented by the position of the two cubes that

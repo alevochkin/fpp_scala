@@ -101,5 +101,4 @@ class BloxorzSuite extends FunSuite {
         Set((Block(Pos(2, 1), Pos(3, 1)), List(Down, Left, Up))).toStream)
     }
   }
-
 }

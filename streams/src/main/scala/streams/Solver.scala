@@ -73,23 +73,26 @@ trait Solver extends GameDef {
     else {
       val more = for {
         path <- initial
-        next <- path._1.legalNeighbors.groupBy(_._1).mapValues(_.map(_._2))
+        next <- newNeighborsOnly(neighborsWithHistory(path._1, path._2), explored)
         if !(explored contains next._1)
       } yield next
 
-      initial.head #:: from(more, explored ++ (more map (_._1)))
+      from(more, explored ++ (more map (_._1))) #::: initial
     }
 
   /**
     * The stream of all paths that begin at the starting block.
     */
-  lazy val pathsFromStart: Stream[(Block, List[Move])] = ???
+  lazy val pathsFromStart: Stream[(Block, List[Move])] = from(Stream((startBlock, List())), Set(startBlock))
 
   /**
     * Returns a stream of all possible pairs of the goal block along
     * with the history how it was reached.
     */
-  lazy val pathsToGoal: Stream[(Block, List[Move])] = ???
+  lazy val pathsToGoal: Stream[(Block, List[Move])] = for {
+    path <- pathsFromStart
+    if path._1 == goalBlock
+  } yield path
 
   /**
     * The (or one of the) shortest sequence(s) of moves to reach the
@@ -99,5 +102,5 @@ trait Solver extends GameDef {
     * the first move that the player should perform from the starting
     * position.
     */
-  lazy val solution: List[Move] = ???
+  lazy val solution: List[Move] = if (pathsToGoal.isEmpty) List.empty else pathsToGoal.head._2.reverse
 }
