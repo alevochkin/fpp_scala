@@ -7,12 +7,16 @@ import org.scalacheck._
 
 abstract class QuickCheckHeap extends Properties("Heap") with IntHeap {
 
-  lazy val genHeap: Gen[H] = //Gen.const(empty)
-    oneOf(Gen.const(empty),
+  /*lazy val genHeap: Gen[H] = oneOf(Gen.const(empty),
       for {
         elem <- arbitrary[Int]
         heap <- genHeap
-      } yield insert(elem, heap))
+      } yield insert(elem, heap))*/
+
+  lazy val genHeap: Gen[H] = for {
+    n <- arbitrary[A]
+    h <- frequency((1, Gen.const(empty)), (9, genHeap))
+  } yield insert(n, h)
 
   implicit lazy val arbHeap: Arbitrary[H] = Arbitrary(genHeap)
 
@@ -26,41 +30,45 @@ abstract class QuickCheckHeap extends Properties("Heap") with IntHeap {
     findMin(h) == a
   }
 
-  property("min2") = forAll { (a: Int, b: Int) =>
+  property("hint1") = forAll { (a: Int, b: Int) =>
     val h = insert(a, empty)
     val h1 = insert(b, h)
     findMin(h1) == List(a, b).min
   }
 
-  property("min3") = forAll { a: Int =>
+  property("hint2") = forAll { a: Int =>
     val h = insert(a, empty)
     isEmpty(deleteMin(h))
   }
 
-  property("min4") = forAll { (h: H) =>
-    def iterate(h: H, acc: List[Int]): List[Int] = {
-      if (isEmpty(h)) acc
+  property("hint3") = forAll { (h: H) =>
+    def isSorted(h: H): Boolean =
+      if (isEmpty(h)) true
       else {
-        val min = findMin(h)
-        iterate(deleteMin(h), min :: acc)
+        val newMin = findMin(h)
+        val newH = deleteMin(h)
+        (isEmpty(newH) || newMin <= findMin(newH)) && isSorted(newH)
       }
-    }
 
-    def isSorted(o: List[Int]): Boolean =
-      if (o.lengthCompare(1) > 0) {
-        val ordering = scala.math.Ordering.Int
-        o.seq.sliding(2).forall { duo => ordering.lteq(duo(0), duo(1)) }
-      }
-      else
-        true
-
-    isSorted(iterate(h, List()))
+    isSorted(h)
   }
 
-  property("min5") = forAll { (h1: H, h2: H) =>
+  property("hint4") = forAll { (h1: H, h2: H) =>
     val min1 = if (isEmpty(h1)) 0 else findMin(h1)
     val min2 = if (isEmpty(h2)) 0 else findMin(h2)
-    if (isEmpty(h1) && isEmpty(h2))  0 == List(min1, min2).min else findMin(meld(h1, h2)) == List(min1, min2).min
+    if (isEmpty(h1) && isEmpty(h2)) 0 == List(min1, min2).min else findMin(meld(h1, h2)) == List(min1, min2).min
+  }
+
+  property("meld") = forAll { (h1: H, h2: H) =>
+    def heapEqual(h1: H, h2: H): Boolean =
+      if (isEmpty(h1) && isEmpty(h2)) true
+      else {
+        val m1 = findMin(h1)
+        val m2 = findMin(h2)
+        m1 == m2 && heapEqual(deleteMin(h1), deleteMin(h2))
+      }
+    heapEqual(meld(h1, h2),
+      meld(deleteMin(h1), insert(findMin(h1), h2)))
   }
 
 }
