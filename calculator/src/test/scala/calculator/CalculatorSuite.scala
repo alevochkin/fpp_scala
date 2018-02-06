@@ -1,20 +1,16 @@
 package calculator
 
-import org.scalatest.FunSuite
-
+import calculator.TweetLength.MaxTweetLength
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
-
-import org.scalatest._
-
-import TweetLength.MaxTweetLength
+import org.scalatest.{FunSuite, _}
 
 @RunWith(classOf[JUnitRunner])
 class CalculatorSuite extends FunSuite with ShouldMatchers {
 
-  /******************
-   ** TWEET LENGTH **
-   ******************/
+  /** ****************
+    * * TWEET LENGTH **
+    * *****************/
 
   def tweetLength(text: String): Int =
     text.codePointCount(0, text.length)
@@ -49,6 +45,37 @@ class CalculatorSuite extends FunSuite with ShouldMatchers {
     assert(resultRed1() == "red")
     val resultRed2 = TweetLength.colorForRemainingCharsCount(Var(-5))
     assert(resultRed2() == "red")
+  }
+
+  test("Self dependency") {
+    val sourceMap: Map[String, Signal[Expr]] = Map("a" -> Signal(Plus(Ref("a"), Ref("b"))))
+    val result = Calculator.computeValues(sourceMap)
+    assert(result("a")() equals Double.NaN)
+  }
+
+  test("Cyclic dependency") {
+    val sourceMap: Map[String, Signal[Expr]] = Map("a" -> Signal(Plus(Ref("c"), Ref("b"))), "b" -> Signal(Literal(100)), "c" -> Signal(Plus(Ref("a"), Literal(100))))
+    val result = Calculator.computeValues(sourceMap)
+    assert(result("a")() equals Double.NaN)
+    assert(result("c")() equals Double.NaN)
+  }
+
+  test("Cyclic dependency deep") {
+    val sourceMap: Map[String, Signal[Expr]] = Map("a" -> Signal(Plus(Ref("с"), Ref("b"))),
+      "b" -> Signal(Plus(Ref("d"), Ref("e"))),
+      "c" -> Signal(Literal(50)),
+      "d" -> Signal(Literal(50)),
+      "e" -> Signal(Ref("a"))
+    )
+    val result = Calculator.computeValues(sourceMap)
+    assert(result("a")() equals Double.NaN)
+  }
+
+  test("Unknown key") {
+    val sourceMap: Map[String, Signal[Expr]] = Map("a" -> Signal(Plus(Literal(100), Ref("b"))), "b" -> Signal(Literal(100)), "z" -> Signal(Plus(Ref("s"), Literal(100))))
+    val result = Calculator.computeValues(sourceMap)
+    assert(result("a")() == 200.0)
+    assert(result("z")() equals Double.NaN)
   }
 
 }
