@@ -32,35 +32,24 @@ object Calculator {
 
     def getValue(key: String) = {
       val expr = namedExpressions(key)
-      if (checkDependency(key)) {
+      if (check(key, dependencyMap(key), dependencyMap, false)) {
         Signal(Double.NaN)
       } else {
         Signal(eval(expr(), namedExpressions))
       }
     }
 
-    def parseDouble(s: String): Boolean = try { s.toDouble; true } catch { case _ => false }
-
-    def checkDependency(name: String): Boolean = {
-
-      def checkDependency(name: String, list:List[String]): Boolean = {
-        ???
+    def check(name: String, keys: List[String], map: Map[String, List[String]], result: Boolean ): Boolean = {
+      if(keys.isEmpty || result) {
+        result
+      } else {
+        check(name, keys flatMap { key =>  map get key} flatten, map, keys.contains(name) || result)
       }
-
-      val dependencies = dependencyMap(name)
-      dependencies.contains(name) ||
-        dependencies.foldLeft(false)((bool, theName) => bool || (dependencyMap.get(theName) match {
-          case None => !parseDouble(theName)
-          case Some(list: List[String]) => list.contains(name) || checkDependency(name, list)
-        }))
     }
-
-
 
     namedExpressions.foldLeft(Map.empty[String, Signal[Double]]) {
       case (map, (key, value)) => map + (key -> getValue(key))
     }
-
   }
 
   def eval(expr: Expr, references: Map[String, Signal[Expr]]): Double = expr match {
